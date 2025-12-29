@@ -18,8 +18,8 @@ class ArticleFactory extends Factory
 
         return [
             'title' => rtrim($title, '.'),
-            'excerpt' => fake()->sentence(18, true),
-            'content' => implode("\n\n", fake()->paragraphs(6)),
+            'excerpt' => fake()->sentence(16, true),
+            'content' => implode("\n\n", fake()->paragraphs(5)),
             'published_at' => fake()->dateTimeBetween('-30 days', 'now'),
         ];
     }

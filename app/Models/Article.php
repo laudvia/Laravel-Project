@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Модель новости (Article).
+ *
+ * Учебная цель: показать работу с моделями + фабриками/сидерами.
  */
 class Article extends Model
 {
     use HasFactory;
 
+    /**
+     * Разрешаем массовое заполнение (mass assignment) для учебного примера.
+     */
     protected $fillable = [
         'title',
         'excerpt',
@@ -22,4 +27,11 @@ class Article extends Model
     protected $casts = [
         'published_at' => 'datetime',
     ];
+
+
+    public function comments()
+    {
+        return $this->hasMany(\App\Models\Comment::class);
+    }
+
 }

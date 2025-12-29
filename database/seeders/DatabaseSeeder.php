@@ -14,12 +14,10 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
 
-        // Новости (Article) — заполняем таблицу фейковыми данными через фабрику
-        \App\Models\Article::factory(25)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        // Articles + comments (учебный пример)
+        \App\Models\Article::factory(20)->create()->each(function ($article) {
+            \App\Models\Comment::factory(fake()->numberBetween(0, 6))
+                ->create(['article_id' => $article->id]);
+        });
     }
 }

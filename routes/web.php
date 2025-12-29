@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +20,12 @@ Route::get('/signup', [AuthController::class, 'create']);
 Route::post('/auth/login', [AuthController::class, 'signUp']);
 Route::get('/', [MainController::class, 'index']);
 
-// Новости (CRUD + пагинация)
+// Новости (Article) + Comments
 Route::resource('articles', ArticleController::class);
+Route::resource('articles.comments', CommentController::class)->shallow()->except(['show']);
 Route::redirect('/news', '/articles');
+
+
 Route::get('/galery/{full_image}', [MainController::class, 'show']);
 Route::get('/about', function () {
     return view('main/about');

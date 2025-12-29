@@ -39,7 +39,7 @@
           <a class="nav-link" href="contact">Contacts</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/articles">News (CRUD)</a>
+          <a class="nav-link" href="/articles">News (DB)</a>
         </li>
     </div>
     <div class="navbar-nav d-flex justify-content-end">

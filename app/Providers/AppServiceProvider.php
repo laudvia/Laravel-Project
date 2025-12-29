@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // В шаблоне подключён Bootstrap 4.3, поэтому используем его разметку для пагинации.
+        // Чтобы пагинация выглядела нормально с Bootstrap (в шаблоне подключён Bootstrap 4.3)
         Paginator::useBootstrapFour();
     }
 }

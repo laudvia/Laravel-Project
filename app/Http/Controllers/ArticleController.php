@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Article;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
-    /**
-     * Список новостей (пагинация).
-     */
-    public function index(Request $request)
+    public function index()
     {
         $articles = Article::query()
             ->orderByDesc('published_at')
@@ -23,9 +19,6 @@ class ArticleController extends Controller
         ]);
     }
 
-    /**
-     * Форма создания новости.
-     */
     public function create()
     {
         return view('articles.create', [
@@ -33,9 +26,6 @@ class ArticleController extends Controller
         ]);
     }
 
-    /**
-     * Сохранение созданной новости.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -49,12 +39,9 @@ class ArticleController extends Controller
 
         return redirect()
             ->route('articles.show', $article)
-            ->with('status', 'Новость успешно создана');
+            ->with('success', 'Статья создана.');
     }
 
-    /**
-     * Просмотр одной новости.
-     */
     public function show(Article $article)
     {
         return view('articles.show', [
@@ -62,9 +49,6 @@ class ArticleController extends Controller
         ]);
     }
 
-    /**
-     * Форма редактирования.
-     */
     public function edit(Article $article)
     {
         return view('articles.edit', [
@@ -72,9 +56,6 @@ class ArticleController extends Controller
         ]);
     }
 
-    /**
-     * Обновление новости.
-     */
     public function update(Request $request, Article $article)
     {
         $data = $request->validate([
@@ -88,18 +69,15 @@ class ArticleController extends Controller
 
         return redirect()
             ->route('articles.show', $article)
-            ->with('status', 'Новость успешно обновлена');
+            ->with('success', 'Статья обновлена.');
     }
 
-    /**
-     * Удаление новости.
-     */
     public function destroy(Article $article)
     {
         $article->delete();
 
         return redirect()
             ->route('articles.index')
-            ->with('status', 'Новость удалена');
+            ->with('success', 'Статья удалена (комментарии удаляются автоматически).');
     }
 }

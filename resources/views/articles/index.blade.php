@@ -3,16 +3,18 @@
 @section('content')
     <div class="d-flex align-items-center justify-content-between mt-4 mb-3">
         <h1 class="h3 mb-0">Новости</h1>
-        <a class="btn btn-primary" href="{{ route('articles.create') }}">Добавить новость</a>
+        <div>
+            <a class="btn btn-primary btn-sm" href="{{ route('articles.create') }}">Создать</a>
+        </div>
     </div>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     @if($articles->count() === 0)
         <div class="alert alert-info">
-            Новостей пока нет. Создайте первую новость.
+            Новостей пока нет. Запустите миграции и сидер, чтобы наполнить таблицу тестовыми данными.
         </div>
     @else
         <div class="list-group">
@@ -28,18 +30,23 @@
                     </div>
 
                     @if(!empty($article->excerpt))
-                        <p class="mb-2">{{ $article->excerpt }}</p>
+                        <p class="mb-1">{{ $article->excerpt }}</p>
                     @endif
 
-                    <div class="d-flex" style="gap: .5rem;">
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('articles.edit', $article) }}">Редактировать</a>
+                    <div class="d-flex align-items-center mt-2">
+                        <a class="btn btn-sm btn-outline-secondary mr-2" href="{{ route('articles.edit', $article) }}">Редактировать</a>
+                        <a class="btn btn-sm btn-outline-primary mr-2" href="{{ route('articles.comments.index', $article) }}">Комментарии</a>
 
-                        <form method="POST" action="{{ route('articles.destroy', $article) }}" onsubmit="return confirm('Удалить новость?');">
+                        <form method="POST" action="{{ route('articles.destroy', $article) }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить статью? Комментарии удалятся тоже.')">
+                                Удалить
+                            </button>
                         </form>
                     </div>
+
+                    <small class="text-muted d-block mt-2">ID: {{ $article->id }}</small>
                 </div>
             @endforeach
         </div>
