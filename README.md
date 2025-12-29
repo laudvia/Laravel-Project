@@ -7,6 +7,31 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Лабораторная работа: Models / Migrations / Seeders / Factories / Route
+
+В проект добавлен модуль "Новости" (Article):
+
+- Model: `app/Models/Article.php`
+- Migration: `database/migrations/*_create_articles_table.php`
+- Factory (faker): `database/factories/ArticleFactory.php`
+- Seeder: `database/seeders/DatabaseSeeder.php` (создаёт 20 записей)
+- Controller: `app/Http/Controllers/ArticleController.php`
+- View: `resources/views/articles/index.blade.php`
+- Route: `GET /articles` (alias: `GET /news` → `/articles`)
+
+### Быстрый запуск
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+
+php artisan migrate --seed
+php artisan serve
+```
+
+Открыть: `http://127.0.0.1:8000/articles`
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
