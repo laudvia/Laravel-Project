@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
 
-        // Новости (Article) — наполняем таблицу фейковыми данными через фабрику
-        \App\Models\Article::factory(20)->create();
+        // Новости (Article) — заполняем таблицу фейковыми данными через фабрику
+        \App\Models\Article::factory(25)->create();
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

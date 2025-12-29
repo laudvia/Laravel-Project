@@ -19,10 +19,9 @@ Route::get('/signup', [AuthController::class, 'create']);
 Route::post('/auth/login', [AuthController::class, 'signUp']);
 Route::get('/', [MainController::class, 'index']);
 
-// Новости из БД (модель Article)
-Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+// Новости (CRUD + пагинация)
+Route::resource('articles', ArticleController::class);
 Route::redirect('/news', '/articles');
-
 Route::get('/galery/{full_image}', [MainController::class, 'show']);
 Route::get('/about', function () {
     return view('main/about');
