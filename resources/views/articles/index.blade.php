@@ -33,11 +33,11 @@
                         <p class="mb-1">{{ $article->excerpt }}</p>
                     @endif
 
-                    <div class="d-flex align-items-center mt-2">
-                        <a class="btn btn-sm btn-outline-secondary mr-2" href="{{ route('articles.edit', $article) }}">Редактировать</a>
-                        <a class="btn btn-sm btn-outline-primary mr-2" href="{{ route('articles.comments.index', $article) }}">Комментарии</a>
+                    <div class="d-flex align-items-center flex-wrap mt-2" style="gap: .5rem;">
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('articles.edit', $article) }}">Редактировать</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ route('articles.comments.index', $article) }}">Комментарии</a>
 
-                        <form method="POST" action="{{ route('articles.destroy', $article) }}">
+                        <form method="POST" action="{{ route('articles.destroy', $article) }}" class="m-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить статью? Комментарии удалятся тоже.')">

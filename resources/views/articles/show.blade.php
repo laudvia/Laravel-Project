@@ -8,10 +8,10 @@
                 {{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : 'Дата не указана' }}
             </div>
         </div>
-        <div class="d-flex">
-            <a class="btn btn-outline-secondary btn-sm mr-2" href="{{ route('articles.index') }}">К списку</a>
-            <a class="btn btn-outline-secondary btn-sm mr-2" href="{{ route('articles.edit', $article) }}">Редактировать</a>
-            <form method="POST" action="{{ route('articles.destroy', $article) }}">
+        <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
+            <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.index') }}">К списку</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.edit', $article) }}">Редактировать</a>
+            <form method="POST" action="{{ route('articles.destroy', $article) }}" class="m-0">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Удалить статью? Комментарии удалятся тоже.')">Удалить</button>
@@ -52,9 +52,9 @@
                     </div>
                     <div class="mt-2" style="white-space: pre-wrap;">{{ $comment->body }}</div>
 
-                    <div class="mt-2 d-flex">
-                        <a class="btn btn-sm btn-outline-secondary mr-2" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
-                        <form method="POST" action="{{ route('comments.destroy', $comment) }}">
+                    <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
+                        <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить комментарий?')">Удалить</button>

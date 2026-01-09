@@ -4,8 +4,10 @@
     <div class="mt-4 mb-3 d-flex align-items-center justify-content-between">
         <h1 class="h4 mb-0">Комментарии к статье: {{ $article->title }}</h1>
         <div>
-            <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.show', $article) }}">К статье</a>
-            <a class="btn btn-primary btn-sm" href="{{ route('articles.comments.create', $article) }}">Добавить</a>
+            <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.show', $article) }}">К статье</a>
+                <a class="btn btn-primary btn-sm" href="{{ route('articles.comments.create', $article) }}">Добавить</a>
+            </div>
         </div>
     </div>
 
@@ -30,10 +32,10 @@
 
                     <div class="mt-2" style="white-space: pre-wrap;">{{ $comment->body }}</div>
 
-                    <div class="mt-2 d-flex">
-                        <a class="btn btn-sm btn-outline-secondary mr-2" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
+                    <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
 
-                        <form method="POST" action="{{ route('comments.destroy', $comment) }}">
+                        <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить комментарий?')">
