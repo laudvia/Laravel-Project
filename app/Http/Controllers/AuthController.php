@@ -89,7 +89,7 @@ final class AuthController extends Controller
             $user->tokens()->where('id', $tokenId)->delete();
         }
 
-        Auth::logout();
+        Auth::guard('web')->logout();
 
         // Аннулируем сессию и обновляем CSRF.
         $request->session()->invalidate();
