@@ -16,13 +16,40 @@ use App\Http\Controllers\CommentController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/signup', [AuthController::class, 'create']);
-Route::post('/auth/login', [AuthController::class, 'signUp']);
 Route::get('/', [MainController::class, 'index']);
 
+/*
+|--------------------------------------------------------------------------
+| ЛР6: Регистрация / Авторизация / Выход (Sanctum + Auth)
+|--------------------------------------------------------------------------
+*/
+
+// Backward-compat со старыми URL из предыдущих ЛР
+Route::redirect('/signup', '/register');
+Route::redirect('/auth/login', '/login');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+
+    // Важно: middleware Authenticate ожидает route name "login" для редиректа неавторизованных.
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth:sanctum')
+    ->name('logout');
+
 // Новости (Article) + Comments
-Route::resource('articles', ArticleController::class);
-Route::resource('articles.comments', CommentController::class)->shallow()->except(['show']);
+// Публично доступны только просмотр списка и отдельной новости.
+Route::resource('articles', ArticleController::class)->only(['index', 'show']);
+
+// Все изменения данных (создание/редактирование/удаление/комментарии) — только для авторизованных.
+Route::middleware('auth:sanctum')->group(function () {
+    Route::resource('articles', ArticleController::class)->except(['index', 'show']);
+    Route::resource('articles.comments', CommentController::class)->shallow()->except(['show']);
+});
 Route::redirect('/news', '/articles');
 
 

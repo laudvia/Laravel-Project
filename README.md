@@ -15,6 +15,32 @@ php artisan migrate:fresh --seed
 php artisan serve
 ```
 
+## Лабораторная работа №6: Авторизация/аутентификация пользователя (Sanctum + Auth)
+
+Реализовано:
+
+1. **Регистрация**
+   - GET `/register` — форма регистрации (Blade + CSRF)
+   - POST `/register` — сохранение пользователя в БД с предварительной валидацией (Request->validate)
+   - Redirect на форму авторизации: `/login`
+
+2. **Авторизация (вход)**
+   - GET `/login` — форма входа
+   - POST `/login` — аутентификация через `Auth::attempt()`
+   - Генерация токена Sanctum: `createToken('web')` (ID токена сохраняется в сессии)
+   - Redirect на главную страницу `/` (в обход middleware `auth`)
+
+3. **Выход**
+   - POST `/logout`
+   - Удаление токена Sanctum, `Auth::logout()`, `invalidate()` сессии и `regenerateToken()` для CSRF
+   - Redirect на главную страницу `/`
+
+4. **Защита от неавторизованных**
+   - Для операций изменения данных используется middleware `auth:sanctum`.
+   - Публично доступны: просмотр списка новостей и одной новости (`articles.index`, `articles.show`).
+
+Примечание: после загрузки проекта на GitHub укажите ссылку на ваш репозиторий в ответе в СДО.
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

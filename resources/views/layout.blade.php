@@ -43,12 +43,20 @@
         </li>
     </div>
     <div class="navbar-nav d-flex justify-content-end">
-      <li class="nav-item">
-        <a class="nav-link" href="/signup">SignUp</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/auth/login">SignIn</a>
-      </li>
+      @auth
+        <span class="navbar-text mr-3">{{ auth()->user()->name }}</span>
+        <form action="{{ route('logout') }}" method="POST" class="form-inline">
+          @csrf
+          <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+        </form>
+      @else
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('register.form') }}">SignUp</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('login') }}">SignIn</a>
+        </li>
+      @endauth
     </div>
     </ul>
 
