@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Article;
+use App\Models\Comment;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -12,11 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+        ]);
+
+        $moderator = User::query()->where('email', 'moderator@example.com')->first();
 
         // Articles + comments (учебный пример)
-        \App\Models\Article::factory(20)->create()->each(function ($article) {
-            \App\Models\Comment::factory(fake()->numberBetween(0, 6))
+        Article::factory(20)->create([
+            'user_id' => $moderator?->id,
+        ])->each(function (Article $article) {
+            Comment::factory(fake()->numberBetween(0, 6))
                 ->create(['article_id' => $article->id]);
         });
     }

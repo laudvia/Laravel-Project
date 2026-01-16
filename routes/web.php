@@ -16,6 +16,7 @@ use App\Http\Controllers\CommentController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 Route::get('/', [MainController::class, 'index']);
 
 /*
@@ -43,17 +44,29 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 // Новости (Article) + Comments
 // Публично доступны только просмотр списка и отдельной новости.
-Route::resource('articles', ArticleController::class)->only(['index', 'show']);
+//
+// ВАЖНО: whereNumber('article') фиксит конфликт /articles/create,
+// который иначе перехватывается роутом /articles/{article} как {article}="create".
+Route::resource('articles', ArticleController::class)
+    ->only(['index', 'show'])
+    ->whereNumber('article');
 
 // Все изменения данных (создание/редактирование/удаление/комментарии) — только для авторизованных.
 Route::middleware('auth:sanctum')->group(function () {
-    Route::resource('articles', ArticleController::class)->except(['index', 'show']);
-    Route::resource('articles.comments', CommentController::class)->shallow()->except(['show']);
+    Route::resource('articles', ArticleController::class)
+        ->except(['index', 'show'])
+        ->whereNumber('article');
+
+    Route::resource('articles.comments', CommentController::class)
+        ->shallow()
+        ->except(['show'])
+        ->whereNumber('article');
 });
+
 Route::redirect('/news', '/articles');
 
-
 Route::get('/galery/{full_image}', [MainController::class, 'show']);
+
 Route::get('/about', function () {
     return view('main/about');
 });
@@ -65,5 +78,6 @@ Route::get('/contact', function () {
         'phone' => '8(495) 423-2323',
         'email' => '@mospolythech.ru'
     ];
+
     return view('main/contact', ['contact' => $contact]);
 });

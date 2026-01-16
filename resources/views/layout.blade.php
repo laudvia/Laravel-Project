@@ -30,6 +30,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url('/articles') }}">News (DB)</a>
                     </li>
+
+                    @can('create', \App\Models\Article::class)
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('articles.create') }}">Создать новость</a>
+                        </li>
+                    @endcan
                 </ul>
 
                 <ul class="navbar-nav mb-2 mb-lg-0">

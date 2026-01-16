@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
+    public function __construct()
+    {
+        // Привязываем policy к ресурсному контроллеру
+        $this->authorizeResource(Article::class, 'article');
+    }
+
     public function index()
     {
         $articles = Article::query()
@@ -34,6 +40,8 @@ class ArticleController extends Controller
             'content' => ['required', 'string', 'min:10'],
             'published_at' => ['nullable', 'date'],
         ]);
+
+        $data['user_id'] = $request->user()?->id;
 
         $article = Article::create($data);
 

@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Comment::class, 'comment');
+    }
+
     public function index(Article $article)
     {
         $comments = $article->comments()

@@ -1,134 +1,51 @@
-
-## Лабораторная: Комментарии к статьям (Article -> Comment)
-
-Добавлено:
-- Model: `Comment`
-- Migration: `create_comments_table` (FK на articles + cascadeOnDelete)
-- Factory: `CommentFactory`
-- Controller: `CommentController` (CRUD)
-- Blade: `resources/views/comments/*`
-- Отношения: `Article hasMany Comments`, `Comment belongsTo Article`
-
-Запуск:
-```bash
-php artisan migrate:fresh --seed
-php artisan serve
-```
-
-## Лабораторная работа №6: Авторизация/аутентификация пользователя (Sanctum + Auth)
+## Лабораторная работа №7: Роли пользователей + Policies + Gate (Laravel)
 
 Реализовано:
+- Таблица ролей `roles` (migration) + модель `Role`.
+- Связь **User belongsTo Role**, **Role hasMany Users** (Eloquent relationship).
+- Добавлено поле `role_id` в `users` (migration).
+- Seeder:
+  - `RoleSeeder` заполняет роли: `moderator`, `reader`.
+  - `UserSeeder` создаёт тестовых пользователей (модератор и читатель).
+  - `DatabaseSeeder` запускает эти сидеры и создаёт тестовые новости и комментарии.
+- Auth:
+  - При регистрации новый пользователь получает роль **читатель**.
+- Gate/Policies:
+  - `Gate::before` в `AuthServiceProvider` пропускает модератора **прежде остальных** проверок.
+  - `ArticlePolicy`: любые CRUD действия только модератор.
+  - `CommentPolicy`: создавать комментарии может любой авторизованный, редактировать/удалять — только модератор.
+- Blade:
+  - Вкладка **«Создать новость»** в навигации доступна только модератору.
+  - Кнопки редактирования/удаления для статей и комментариев видны только модератору.
+- Кастомные ответы:
+  - 403-страница (`resources/views/errors/403.blade.php`) и обработка `AuthorizationException`.
+  - При отсутствии авторизации — редирект на логин с сообщением.
 
-1. **Регистрация**
-   - GET `/register` — форма регистрации (Blade + CSRF)
-   - POST `/register` — сохранение пользователя в БД с предварительной валидацией (Request->validate)
-   - Redirect на форму авторизации: `/login`
+Тестовые пользователи (после `php artisan migrate:fresh --seed`):
+- **moderator@example.com** / **password**
+- **reader@example.com** / **password**
 
-2. **Авторизация (вход)**
-   - GET `/login` — форма входа
-   - POST `/login` — аутентификация через `Auth::attempt()`
-   - Генерация токена Sanctum: `createToken('web')` (ID токена сохраняется в сессии)
-   - Redirect на главную страницу `/` (в обход middleware `auth`)
-
-3. **Выход**
-   - POST `/logout`
-   - Удаление токена Sanctum, `Auth::logout()`, `invalidate()` сессии и `regenerateToken()` для CSRF
-   - Redirect на главную страницу `/`
-
-4. **Защита от неавторизованных**
-   - Для операций изменения данных используется middleware `auth:sanctum`.
-   - Публично доступны: просмотр списка новостей и одной новости (`articles.index`, `articles.show`).
-
-Примечание: после загрузки проекта на GitHub укажите ссылку на ваш репозиторий в ответе в СДО.
-
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
-## Лабораторная работа: Models / Migrations / Seeders / Factories / Route
-
-В проект добавлен модуль "Новости" (Article):
-
-- Model: `app/Models/Article.php`
-- Migration: `database/migrations/*_create_articles_table.php`
-- Factory (faker): `database/factories/ArticleFactory.php`
-- Seeder: `database/seeders/DatabaseSeeder.php` (создаёт 20 записей)
-- Controller: `app/Http/Controllers/ArticleController.php`
-- View: `resources/views/articles/index.blade.php`
-- Route: `GET /articles` (alias: `GET /news` → `/articles`)
-
-### Быстрый запуск
-
+Запуск:
 ```bash
 composer install
 cp .env.example .env
 php artisan key:generate
 
-php artisan migrate --seed
+php artisan migrate:fresh --seed
 php artisan serve
 ```
 
-Открыть: `http://127.0.0.1:8000/articles`
+Примечание: после загрузки проекта на GitHub укажите ссылку на ваш репозиторий в ответе в СДО.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Посмотреть все роли:
+php artisan tinker
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+\App\Models\Role::all();
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Красиво (только нужные поля):
+\App\Models\Role::query()->select('id','name','slug')->get()->toArray();
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Посмотреть пользователей с ролями:
+\App\Models\User::with('role')->select('id','email','role_id')->get()->toArray();

@@ -6,13 +6,19 @@
         <div>
             <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
                 <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.show', $article) }}">К статье</a>
-                <a class="btn btn-primary btn-sm" href="{{ route('articles.comments.create', $article) }}">Добавить</a>
+                @can('create', \App\Models\Comment::class)
+                    <a class="btn btn-primary btn-sm" href="{{ route('articles.comments.create', $article) }}">Добавить</a>
+                @endcan
             </div>
         </div>
     </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
     @if($comments->count() === 0)
@@ -32,17 +38,21 @@
 
                     <div class="mt-2" style="white-space: pre-wrap;">{{ $comment->body }}</div>
 
-                    <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
+                    @can('update', $comment)
+                        <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
 
-                        <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить комментарий?')">
-                                Удалить
-                            </button>
-                        </form>
-                    </div>
+                            @can('delete', $comment)
+                                <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить комментарий?')">
+                                        Удалить
+                                    </button>
+                                </form>
+                            @endcan
+                        </div>
+                    @endcan
                 </div>
             @endforeach
         </div>

@@ -4,16 +4,24 @@
     <div class="d-flex align-items-center justify-content-between mt-4 mb-3">
         <h1 class="h3 mb-0">Новости</h1>
         <div>
-            @auth
+            @can('create', \App\Models\Article::class)
                 <a class="btn btn-primary btn-sm" href="{{ route('articles.create') }}">Создать</a>
             @else
-                <a class="btn btn-outline-primary btn-sm" href="{{ route('login') }}">Войти, чтобы создавать</a>
-            @endauth
+                @auth
+                    <span class="text-muted">Создание доступно только модератору</span>
+                @else
+                    <a class="btn btn-outline-primary btn-sm" href="{{ route('login') }}">Войти</a>
+                @endauth
+            @endcan
         </div>
     </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
     @if($articles->count() === 0)
@@ -40,7 +48,15 @@
                     <div class="d-flex align-items-center flex-wrap mt-2" style="gap: .5rem;">
                         @auth
                             <a class="btn btn-sm btn-outline-primary" href="{{ route('articles.comments.index', $article) }}">Комментарии</a>
+                        @else
+                            <a class="btn btn-sm btn-outline-primary" href="{{ route('login') }}">Войти, чтобы комментировать</a>
+                        @endauth
+
+                        @can('update', $article)
                             <a class="btn btn-sm btn-outline-secondary" href="{{ route('articles.edit', $article) }}">Редактировать</a>
+                        @endcan
+
+                        @can('delete', $article)
                             <form method="POST" action="{{ route('articles.destroy', $article) }}" class="m-0">
                                 @csrf
                                 @method('DELETE')
@@ -48,9 +64,7 @@
                                     Удалить
                                 </button>
                             </form>
-                        @else
-                            <a class="btn btn-sm btn-outline-primary" href="{{ route('login') }}">Войти, чтобы комментировать</a>
-                        @endauth
+                        @endcan
                     </div>
 
                     <small class="text-muted d-block mt-2">ID: {{ $article->id }}</small>

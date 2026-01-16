@@ -27,20 +27,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
-        $table->id();
-
-        $table->foreignId('user_id')
-            ->constrained()
-            ->cascadeOnDelete();
-
-        $table->foreignId('article_id')
-            ->constrained()
-            ->cascadeOnDelete(); // удалять комментарии при удалении статьи
-
-        $table->text('content');
-
-        $table->timestamps();
-        });
+        Schema::dropIfExists('comments');
     }
 };

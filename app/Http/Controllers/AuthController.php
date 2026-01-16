@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,10 +29,13 @@ final class AuthController extends Controller
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
+        $readerRoleId = Role::query()->where('slug', 'reader')->value('id');
+
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role_id' => $readerRoleId, // по умолчанию любой новый пользователь — «читатель»
         ]);
 
         // После успешной регистрации — отправляем пользователя на форму авторизации.
