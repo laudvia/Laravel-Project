@@ -51,7 +51,7 @@
     </div>
 
     @php
-        $latestComments = $article->comments()->latest()->take(5)->get();
+        $latestComments = $article->comments()->with('author')->latest()->take(5)->get();
     @endphp
 
     @if($latestComments->count() === 0)
@@ -61,15 +61,15 @@
             @foreach($latestComments as $comment)
                 <div class="list-group-item">
                     <div class="d-flex justify-content-between">
-                        <strong>{{ $comment->author_name }}</strong>
+                        <strong>{{ $comment->author?->name ?? $comment->author_name }}</strong>
                         <small class="text-muted">{{ $comment->created_at->format('d.m.Y H:i') }}</small>
                     </div>
                     <div class="mt-2" style="white-space: pre-wrap;">{{ $comment->body }}</div>
 
-                    @can('update', $comment)
+                    @can('comment.update', $comment)
                         <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
                             <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
-                            @can('delete', $comment)
+                            @can('comment.delete', $comment)
                                 <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
                                     @csrf
                                     @method('DELETE')
@@ -92,23 +92,8 @@
                     @csrf
 
                     <div class="form-group">
-                        <label for="author_name">Имя</label>
-                        <input type="text" id="author_name" name="author_name"
-                               class="form-control @error('author_name') is-invalid @enderror"
-                               value="{{ old('author_name') }}" required>
-                        @error('author_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="author_email">Email (необязательно)</label>
-                        <input type="email" id="author_email" name="author_email"
-                               class="form-control @error('author_email') is-invalid @enderror"
-                               value="{{ old('author_email') }}">
-                        @error('author_email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <label>Автор</label>
+                        <input type="text" class="form-control" value="{{ auth()->user()->name }} ({{ auth()->user()->email }})" readonly>
                     </div>
 
                     <div class="form-group">

@@ -6,7 +6,7 @@
         <div>
             <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
                 <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.show', $article) }}">К статье</a>
-                @can('create', \App\Models\Comment::class)
+                @can('comment.create')
                     <a class="btn btn-primary btn-sm" href="{{ route('articles.comments.create', $article) }}">Добавить</a>
                 @endcan
             </div>
@@ -28,7 +28,7 @@
             @foreach($comments as $comment)
                 <div class="list-group-item">
                     <div class="d-flex justify-content-between">
-                        <strong>{{ $comment->author_name }}</strong>
+                        <strong>{{ $comment->author?->name ?? $comment->author_name }}</strong>
                         <small class="text-muted">{{ $comment->created_at->format('d.m.Y H:i') }}</small>
                     </div>
 
@@ -38,11 +38,11 @@
 
                     <div class="mt-2" style="white-space: pre-wrap;">{{ $comment->body }}</div>
 
-                    @can('update', $comment)
+                    @can('comment.update', $comment)
                         <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
                             <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
 
-                            @can('delete', $comment)
+                            @can('comment.delete', $comment)
                                 <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
                                     @csrf
                                     @method('DELETE')

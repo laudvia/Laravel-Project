@@ -44,5 +44,29 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('is-moderator', fn (User $user) => $user->isModerator());
+
+        /*
+         |------------------------------------------------------------------
+         | Домашнее задание №4: права на комментарии через шлюзы (Gate)
+         |------------------------------------------------------------------
+         | - Читать статьи/статью может любой.
+         | - Добавлять комментарии может любой авторизованный пользователь.
+         | - Редактировать/удалять комментарий может его автор или модератор.
+         |   (Модератор уже проходит благодаря Gate::before выше.)
+         */
+        // Для гостя Gate передаёт null, поэтому делаем nullable тип.
+        Gate::define('comment.create', fn (?User $user) => $user !== null);
+
+        Gate::define('comment.update', function (?User $user, Comment $comment) {
+            return $user !== null
+                && $comment->user_id !== null
+                && $comment->user_id === $user->id;
+        });
+
+        Gate::define('comment.delete', function (?User $user, Comment $comment) {
+            return $user !== null
+                && $comment->user_id !== null
+                && $comment->user_id === $user->id;
+        });
     }
 }

@@ -1,30 +1,22 @@
 <div class="form-group">
-    <label for="author_name">Имя</label>
+    <label>Автор</label>
+
+    @php
+        $authorName = $comment->exists
+            ? ($comment->author?->name ?? $comment->author_name)
+            : (auth()->user()?->name ?? '');
+
+        $authorEmail = $comment->exists
+            ? ($comment->author_email ?? '')
+            : (auth()->user()?->email ?? '');
+    @endphp
+
     <input
         type="text"
-        id="author_name"
-        name="author_name"
-        class="form-control @error('author_name') is-invalid @enderror"
-        value="{{ old('author_name', $comment->author_name) }}"
-        required
+        class="form-control"
+        value="{{ trim($authorName . ($authorEmail ? ' (' . $authorEmail . ')' : '')) }}"
+        readonly
     >
-    @error('author_name')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group">
-    <label for="author_email">Email (необязательно)</label>
-    <input
-        type="email"
-        id="author_email"
-        name="author_email"
-        class="form-control @error('author_email') is-invalid @enderror"
-        value="{{ old('author_email', $comment->author_email) }}"
-    >
-    @error('author_email')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
 </div>
 
 <div class="form-group">
@@ -39,4 +31,8 @@
     @error('body')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
+</div>
+
+<div class="alert alert-info">
+    Редактировать и удалять комментарии может только автор комментария и модератор.
 </div>

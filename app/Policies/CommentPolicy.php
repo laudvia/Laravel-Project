@@ -29,19 +29,21 @@ class CommentPolicy
         return Response::allow();
     }
 
-    /**
-     * Редактировать комментарии может только модератор.
-     */
     public function update(User $user, Comment $comment): Response
     {
-        return Response::deny('Редактировать комментарии может только модератор.');
+        if ($comment->user_id !== null && $comment->user_id === $user->id) {
+            return Response::allow();
+        }
+
+        return Response::deny('Редактировать комментарии может только автор комментария и модератор.');
     }
 
-    /**
-     * Удалять комментарии может только модератор.
-     */
     public function delete(User $user, Comment $comment): Response
     {
-        return Response::deny('Удалять комментарии может только модератор.');
+        if ($comment->user_id !== null && $comment->user_id === $user->id) {
+            return Response::allow();
+        }
+
+        return Response::deny('Удалять комментарии может только автор комментария и модератор.');
     }
 }
