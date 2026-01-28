@@ -25,6 +25,8 @@ class CommentFactory extends Factory
             'author_name' => $userId ? (User::query()->find($userId)?->name ?? fake()->name()) : fake()->name(),
             'author_email' => $userId ? (User::query()->find($userId)?->email ?? null) : (fake()->boolean(70) ? fake()->safeEmail() : null),
             'body' => fake()->paragraphs(2, true),
+            // В сидере комментарии сразу видны на сайте (как будто уже прошли модерацию)
+            'is_approved' => true,
         ];
     }
 }

@@ -36,6 +36,12 @@
                             <a class="nav-link" href="{{ route('articles.create') }}">Создать новость</a>
                         </li>
                     @endcan
+
+                    @can('is-moderator')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('moderator.comments.index') }}">Модерация комментариев</a>
+                        </li>
+                    @endcan
                 </ul>
 
                 <ul class="navbar-nav mb-2 mb-lg-0">

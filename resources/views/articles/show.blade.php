@@ -51,7 +51,8 @@
     </div>
 
     @php
-        $latestComments = $article->comments()->with('author')->latest()->take(5)->get();
+        // Показываем только прошедшие модерацию комментарии
+        $latestComments = $article->comments()->approved()->with('author')->latest()->take(5)->get();
     @endphp
 
     @if($latestComments->count() === 0)

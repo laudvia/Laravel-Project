@@ -17,7 +17,17 @@ class Comment extends Model
         'author_name',
         'author_email',
         'body',
+        'is_approved',
     ];
+
+    protected $casts = [
+        'is_approved' => 'boolean',
+    ];
+
+    public function scopeApproved($query)
+    {
+        return $query->where('is_approved', true);
+    }
 
     public function article()
     {

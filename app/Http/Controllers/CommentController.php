@@ -11,7 +11,9 @@ class CommentController extends Controller
 {
     public function index(Article $article)
     {
+        // На странице статьи показываем только комментарии, прошедшие модерацию
         $comments = $article->comments()
+            ->approved()
             ->with('author')
             ->latest()
             ->paginate(10);
@@ -49,11 +51,50 @@ class CommentController extends Controller
             'author_name' => $user->name,
             'author_email' => $user->email,
             'body' => $data['body'],
+            'is_approved' => false,
         ]);
 
         return redirect()
             ->route('articles.show', $article)
-            ->with('success', 'Комментарий добавлен.');
+            ->with('success', 'Комментарий отправлен и ожидает модерации.');
+    }
+
+    /**
+     * ЛР9: интерфейс модерации комментариев (только для модератора)
+     */
+    public function moderationIndex()
+    {
+        $comments = Comment::query()
+            ->where('is_approved', false)
+            ->with(['article', 'author'])
+            ->latest()
+            ->paginate(15);
+
+        return view('moderation.comments', [
+            'comments' => $comments,
+        ]);
+    }
+
+    public function approve(Comment $comment)
+    {
+        if ($comment->is_approved) {
+            return back()->with('error', 'Этот комментарий уже прошёл модерацию.');
+        }
+
+        $comment->update(['is_approved' => true]);
+
+        return back()->with('success', 'Комментарий принят.');
+    }
+
+    public function reject(Comment $comment)
+    {
+        if ($comment->is_approved) {
+            return back()->with('error', 'Нельзя отклонить уже опубликованный комментарий.');
+        }
+
+        $comment->delete();
+
+        return back()->with('success', 'Комментарий отклонён и удалён.');
     }
 
     public function edit(Comment $comment)

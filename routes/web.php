@@ -63,6 +63,27 @@ Route::middleware('auth:sanctum')->group(function () {
         ->whereNumber('article');
 });
 
+/*
+|--------------------------------------------------------------------------
+| ЛР9: Модерация комментариев (только модератор)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'can:is-moderator'])
+    ->prefix('moderator')
+    ->name('moderator.')
+    ->group(function () {
+        Route::get('/comments', [CommentController::class, 'moderationIndex'])
+            ->name('comments.index');
+
+        Route::patch('/comments/{comment}/approve', [CommentController::class, 'approve'])
+            ->name('comments.approve')
+            ->whereNumber('comment');
+
+        Route::delete('/comments/{comment}/reject', [CommentController::class, 'reject'])
+            ->name('comments.reject')
+            ->whereNumber('comment');
+    });
+
 Route::redirect('/news', '/articles');
 
 Route::get('/galery/{full_image}', [MainController::class, 'show']);
