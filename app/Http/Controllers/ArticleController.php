@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewArticleCreated;
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ArticleController extends Controller
 {
@@ -44,6 +47,21 @@ class ArticleController extends Controller
         $data['user_id'] = $request->user()?->id;
 
         $article = Article::create($data);
+
+        // Уведомляем модератора о добавлении новой статьи
+        $moderatorEmail = (string) (config('mail.moderator.address') ?: config('mail.from.address'));
+        if ($moderatorEmail !== '') {
+            try {
+                Mail::to($moderatorEmail)->send(new NewArticleCreated($article));
+            } catch (\Throwable $e) {
+                // Не блокируем создание статьи из-за проблем с почтой
+                Log::warning('Failed to send new article notification email', [
+                    'article_id' => $article->id,
+                    'to' => $moderatorEmail,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return redirect()
             ->route('articles.show', $article)

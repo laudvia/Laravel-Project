@@ -114,6 +114,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Moderator (notification recipient)
+    |--------------------------------------------------------------------------
+    |
+    | Email address that will receive notifications about new articles.
+    | Can be configured via .env.
+    |
+    */
+
+    'moderator' => [
+        'address' => env('MAIL_MODERATOR_ADDRESS', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
+        'name' => env('MAIL_MODERATOR_NAME', 'Модератор'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Markdown Mail Settings
     |--------------------------------------------------------------------------
     |
