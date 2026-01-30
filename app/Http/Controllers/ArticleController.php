@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewArticleEvent;
 use App\Jobs\VeryLongJob;
 use App\Models\Article;
 use Illuminate\Http\Request;
@@ -46,11 +47,16 @@ class ArticleController extends Controller
 
         $article = Article::create($data);
 
+        // Онлайн-оповещение пользователей, которые сейчас находятся на сайте
+        event(new NewArticleEvent($article));
+
         // Уведомление модератора выносим в очередь (database driver)
         VeryLongJob::dispatch($article);
 
+        // Чтобы не было "мелькания" (лишнего редиректа через страницу show),
+        // после создания всегда уходим на список статей.
         return redirect()
-            ->route('articles.show', $article)
+            ->route('articles.index')
             ->with('success', 'Статья создана.');
     }
 

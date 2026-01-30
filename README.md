@@ -1,43 +1,27 @@
-## Лабораторная работа №10: Роли пользователей + Policies + Gate (Laravel)
+## Лабораторная работа №11: Широковещание (Pusher + Laravel Echo)
 
 Реализовано:
-- Таблица ролей `roles` (migration) + модель `Role`.
-- Связь **User belongsTo Role**, **Role hasMany Users** (Eloquent relationship).
-- Добавлено поле `role_id` в `users` (migration).
-- Seeder:
-  - `RoleSeeder` заполняет роли: `moderator`, `reader`.
-  - `UserSeeder` создаёт тестовых пользователей (модератор и читатель).
-  - `DatabaseSeeder` запускает эти сидеры и создаёт тестовые новости и комментарии.
-- Auth:
-  - При регистрации новый пользователь получает роль **читатель**.
-- Gate/Policies:
-  - `Gate::before` в `AuthServiceProvider` пропускает модератора **прежде остальных** проверок.
-  - `ArticlePolicy`: любые CRUD действия только модератор.
-  - `CommentPolicy`: создавать комментарии может любой авторизованный, редактировать/удалять — только модератор.
-- Blade:
-  - Вкладка **«Создать новость»** в навигации доступна только модератору.
-  - Кнопки редактирования/удаления для статей и комментариев видны только модератору.
-- Кастомные ответы:
-  - 403-страница (`resources/views/errors/403.blade.php`) и обработка `AuthorizationException`.
-  - При отсутствии авторизации — редирект на логин с сообщением.
+- Событие `App\Events\NewArticleEvent` implements `ShouldBroadcast`.
+  - Публичный канал: `test` (используется `Channel`, не `PrivateChannel`).
+  - Payload через `broadcastWith()` → `{ article: { id, title, excerpt, published_at } }`.
+- В `ArticleController@store` после создания статьи вызывается `event(new NewArticleEvent($article));`.
+- Подключен Laravel Echo в `resources/js/bootstrap.js`.
+- Добавлен Vue-компонент `resources/js/components/App.vue`, который слушает:
+  - `Echo.channel('test').listen('NewArticleEvent', ...)` и показывает alert + простое модальное окно.
+- В `resources/views/layout.blade.php` подключён `@vite(['resources/css/app.css','resources/js/app.js'])` и добавлен `<div id="app"></div>`.
 
-Тестовые пользователи (после `php artisan migrate:fresh --seed`):
-- **moderator@example.com** / **password**
-- **reader@example.com** / **password**
+Что нужно настроить у себя:
+1) Создать приложение в Pusher и скопировать ключи в `.env`:
+   - `PUSHER_APP_ID`, `PUSHER_APP_KEY`, `PUSHER_APP_SECRET`, `PUSHER_APP_CLUSTER=eu`
+   - `BROADCAST_DRIVER=pusher`
+2) Установить зависимости:
+   - `composer install` (или `composer update` чтобы подтянуть `pusher/pusher-php-server`)
+   - `npm install`
+3) Запустить:
+   - очередь: `php artisan queue:work`
+   - фронтенд: `npm run dev` (или `npm run watch`)
+   - сервер: `php artisan serve`
 
-Запуск:
-```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-
-php artisan migrate:fresh --seed
-php artisan serve
-```
-
-Примечание: после загрузки проекта на GitHub укажите ссылку на ваш репозиторий в ответе в СДО.
-
----
 
 Посмотреть все роли:
 php artisan tinker
@@ -49,3 +33,13 @@ php artisan tinker
 
 Посмотреть пользователей с ролями:
 \App\Models\User::with('role')->select('id','email','role_id')->get()->toArray();
+
+
+Терминал 1 — Laravel
+php artisan serve
+
+Терминал 2 — очередь
+php artisan queue:work
+
+Терминал 3 — Vite
+npm run dev
