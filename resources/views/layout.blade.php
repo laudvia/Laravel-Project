@@ -47,22 +47,52 @@
                     @endcan
                 </ul>
 
-                <ul class="navbar-nav mb-2 mb-lg-0">
+                {{-- Правая часть навбара --}}
+                <ul class="navbar-nav align-items-center">
                     @auth
-                        <li class="nav-item">
-                            <span class="navbar-text me-3">{{ auth()->user()->name }}</span>
+                        @php($unreadNotifications = auth()->user()->unreadNotifications)
+
+                        <li class="nav-item dropdown d-flex align-items-center me-2">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Уведомления
+                                @if($unreadNotifications->count() > 0)
+                                    <span class="badge bg-danger">{{ $unreadNotifications->count() }}</span>
+                                @endif
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+                                @forelse($unreadNotifications as $notification)
+                                    <li>
+                                        <a class="dropdown-item text-wrap"
+                                           href="{{ route('notifications.open', $notification->id) }}">
+                                            {{ $notification->data['title'] ?? 'Новая статья' }}
+                                        </a>
+                                    </li>
+                                @empty
+                                    <li>
+                                        <span class="dropdown-item-text text-muted">Нет непрочитанных уведомлений</span>
+                                    </li>
+                                @endforelse
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+
+                        {{-- Имя пользователя (как nav-link, чтобы совпадали высоты/отступы) --}}
+                        <li class="nav-item d-flex align-items-center">
+                            <span class="nav-link me-3 py-0">{{ auth()->user()->name }}</span>
+                        </li>
+
+                        <li class="nav-item d-flex align-items-center">
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline m-0">
                                 @csrf
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
                             </form>
                         </li>
                     @else
-                        <li class="nav-item">
+                        <li class="nav-item d-flex align-items-center">
                             <a class="nav-link" href="{{ route('register.form') }}">Sign Up</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item d-flex align-items-center">
                             <a class="nav-link" href="{{ route('login') }}">Sign In</a>
                         </li>
                     @endauth

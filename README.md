@@ -43,3 +43,25 @@ php artisan queue:work
 
 Терминал 3 — Vite
 npm run dev
+
+---
+
+## Лабораторная работа №12: Уведомления читателей о новых статьях (Database Notifications)
+
+Реализовано:
+- Добавлена миграция таблицы `notifications` (аналог `php artisan notification:table`).
+- Создан класс уведомления `App\Notifications\NewArticleCreatedNotification`.
+  - Канал: `database` в методе `via()`.
+  - Метод `toDatabase()` возвращает массив данных: `article_id`, `title`.
+- В `ArticleController@store` после сохранения статьи отправляется уведомление всем пользователям
+  с ролью `reader` через `Notification::send(...)`.
+- В навигации (`resources/views/layout.blade.php`) добавлено выпадающее меню со списком
+  непрочитанных уведомлений и бейджем с их количеством.
+- При клике по уведомлению выполняется переход на статью и уведомление помечается прочитанным
+  (`NotificationController@open`, роут `notifications.open`).
+
+Как запустить:
+1) Применить миграции:
+   - `php artisan migrate`
+2) Создать тестовых пользователей/роли (если нужно):
+   - `php artisan db:seed`

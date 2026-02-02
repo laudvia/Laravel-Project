@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Events\NewArticleEvent;
 use App\Jobs\VeryLongJob;
 use App\Models\Article;
+use App\Models\User;
+use App\Notifications\NewArticleCreatedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class ArticleController extends Controller
 {
@@ -46,6 +49,16 @@ class ArticleController extends Controller
         $data['user_id'] = $request->user()?->id;
 
         $article = Article::create($data);
+
+        // ЛР12: уведомление читателей (database notifications)
+        // Отправляем только пользователям с ролью reader.
+        // Они, как правило, не аутентифицированы в текущей сессии (создаёт новость модератор).
+        $readers = User::query()
+            ->whereHas('role', fn ($q) => $q->where('slug', 'reader'))
+            ->where('id', '!=', $request->user()->id)
+            ->get();
+
+        Notification::send($readers, new NewArticleCreatedNotification($article));
 
         // Онлайн-оповещение пользователей, которые сейчас находятся на сайте
         event(new NewArticleEvent($article));

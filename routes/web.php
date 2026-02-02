@@ -5,6 +5,7 @@ use App\Http\Controllers\MainController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,10 @@ Route::resource('articles', ArticleController::class)
 
 // Все изменения данных (создание/редактирование/удаление/комментарии) — только для авторизованных.
 Route::middleware('auth:sanctum')->group(function () {
+    // ЛР12: открыть уведомление (пометить как прочитанное) и перейти к статье
+    Route::get('/notifications/{notification}', [NotificationController::class, 'open'])
+        ->name('notifications.open');
+
     Route::resource('articles', ArticleController::class)
         ->except(['index', 'show'])
         ->whereNumber('article');
