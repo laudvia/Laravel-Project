@@ -48,8 +48,14 @@ Route::post('/logout', [AuthController::class, 'logout'])
 //
 // ВАЖНО: whereNumber('article') фиксит конфликт /articles/create,
 // который иначе перехватывается роутом /articles/{article} как {article}="create".
-Route::resource('articles', ArticleController::class)
-    ->only(['index', 'show'])
+// Публично доступны: список + просмотр отдельной статьи.
+// Просмотр статьи логируем через middleware (ЛР14).
+Route::get('/articles', [ArticleController::class, 'index'])
+    ->name('articles.index');
+
+Route::get('/articles/{article}', [ArticleController::class, 'show'])
+    ->name('articles.show')
+    ->middleware('log.article.view')
     ->whereNumber('article');
 
 // Все изменения данных (создание/редактирование/удаление/комментарии) — только для авторизованных.
