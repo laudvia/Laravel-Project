@@ -8,10 +8,17 @@ use App\Models\Article;
 use App\Models\User;
 use App\Notifications\NewArticleCreatedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 
 class ArticleController extends Controller
 {
+    /**
+     * Ключ, под которым храним список страниц пагинации, которые уже были закешированы в index().
+     * Нужен, чтобы в store() корректно очистить кэш по всем страницам списка.
+     */
+    private const INDEX_PAGES_CACHE_KEY = 'articles.index.cached_pages';
+
     public function __construct()
     {
         // Привязываем policy к ресурсному контроллеру
@@ -20,10 +27,22 @@ class ArticleController extends Controller
 
     public function index()
     {
-        $articles = Article::query()
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->paginate(10);
+        $page = (int) request()->query('page', 1);
+
+        $cacheKey = "articles.index.page.$page";
+        $articles = Cache::remember($cacheKey, now()->addMinutes(5), function () {
+            return Article::query()
+                ->orderByDesc('published_at')
+                ->orderByDesc('id')
+                ->paginate(10);
+        });
+
+        // Запоминаем, какие страницы пагинации уже кэшировали, чтобы уметь их чистить в store().
+        $pages = Cache::get(self::INDEX_PAGES_CACHE_KEY, []);
+        if (!in_array($page, $pages, true)) {
+            $pages[] = $page;
+            Cache::put(self::INDEX_PAGES_CACHE_KEY, $pages, now()->addDay());
+        }
 
         return view('articles.index', [
             'articles' => $articles,
@@ -50,6 +69,9 @@ class ArticleController extends Controller
 
         $article = Article::create($data);
 
+        // ЛР13: после создания статьи чистим кэш главной (списка) включая страницы пагинации.
+        $this->clearIndexCache();
+
         // ЛР12: уведомление читателей (database notifications)
         // Отправляем только пользователям с ролью reader.
         // Они, как правило, не аутентифицированы в текущей сессии (создаёт новость модератор).
@@ -75,9 +97,31 @@ class ArticleController extends Controller
 
     public function show(Article $article)
     {
-        return view('articles.show', [
-            'article' => $article,
-        ]);
+        // ЛР13: кэшируем страницу просмотра статьи вместе с комментариями.
+        // Используем rememberForever, т.к. в требованиях указано «rememberForever».
+        $cacheKey = "articles.show.{$article->id}";
+
+        $payload = Cache::rememberForever($cacheKey, function () use ($article) {
+            // Берём свежие данные из БД и сразу загружаем связи.
+            $freshArticle = Article::query()
+                ->with('user')
+                ->findOrFail($article->id);
+
+            $latestComments = $freshArticle
+                ->comments()
+                ->approved()
+                ->with('author')
+                ->latest()
+                ->take(5)
+                ->get();
+
+            return [
+                'article' => $freshArticle,
+                'latestComments' => $latestComments,
+            ];
+        });
+
+        return view('articles.show', $payload);
     }
 
     public function edit(Article $article)
@@ -98,6 +142,9 @@ class ArticleController extends Controller
 
         $article->update($data);
 
+        // ЛР13: при обновлении чистим весь кэш.
+        Cache::flush();
+
         return redirect()
             ->route('articles.show', $article)
             ->with('success', 'Статья обновлена.');
@@ -107,8 +154,27 @@ class ArticleController extends Controller
     {
         $article->delete();
 
+        // ЛР13: при удалении чистим весь кэш.
+        Cache::flush();
+
         return redirect()
             ->route('articles.index')
             ->with('success', 'Статья удалена (комментарии удаляются автоматически).');
+    }
+
+    private function clearIndexCache(): void
+    {
+        $pages = Cache::get(self::INDEX_PAGES_CACHE_KEY, []);
+
+        // На всякий случай всегда очищаем первую страницу.
+        if (!in_array(1, $pages, true)) {
+            $pages[] = 1;
+        }
+
+        foreach ($pages as $page) {
+            Cache::forget("articles.index.page.$page");
+        }
+
+        Cache::forget(self::INDEX_PAGES_CACHE_KEY);
     }
 }

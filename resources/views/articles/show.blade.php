@@ -50,11 +50,6 @@
         @endauth
     </div>
 
-    @php
-        // Показываем только прошедшие модерацию комментарии
-        $latestComments = $article->comments()->approved()->with('author')->latest()->take(5)->get();
-    @endphp
-
     @if($latestComments->count() === 0)
         <div class="alert alert-info">Комментариев пока нет.</div>
     @else
