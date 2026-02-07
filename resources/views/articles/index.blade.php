@@ -47,7 +47,7 @@
 
                     <div class="d-flex align-items-center flex-wrap mt-2" style="gap: .5rem;">
                         @auth
-                            <a class="btn btn-sm btn-outline-primary" href="{{ route('articles.comments.index', $article) }}">Комментарии</a>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ route('articles.show', $article) }}#comments">Комментарии</a>
                         @else
                             <a class="btn btn-sm btn-outline-primary" href="{{ route('login') }}">Войти, чтобы комментировать</a>
                         @endauth

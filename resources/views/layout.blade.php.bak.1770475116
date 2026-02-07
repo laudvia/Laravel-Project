@@ -37,34 +37,6 @@
 
                 <ul class="navbar-nav align-items-center">
                     @auth
-
-                        @php($unreadNotifications = auth()->user()->unreadNotifications)
-
-                        <li class="nav-item dropdown d-flex align-items-center me-2">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                               aria-expanded="false">
-                                Уведомления
-                                @if($unreadNotifications->count() > 0)
-                                    <span class="badge bg-danger">{{ $unreadNotifications->count() }}</span>
-                                @endif
-                            </a>
-
-                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
-                                @forelse($unreadNotifications as $notification)
-                                    <li>
-                                        <a class="dropdown-item text-wrap"
-                                           href="{{ \Illuminate\Support\Facades\Route::has('notifications.open') ? route('notifications.open', $notification->id) : '#' }}">
-                                            {{ $notification->data['title'] ?? 'Новая статья' }}
-                                        </a>
-                                    </li>
-                                @empty
-                                    <li>
-                                        <span class="dropdown-item-text text-muted">Нет непрочитанных уведомлений</span>
-                                    </li>
-                                @endforelse
-                            </ul>
-                        </li>
-
                         <li class="nav-item">
                             <span class="nav-link">{{ auth()->user()->name }}</span>
                         </li>

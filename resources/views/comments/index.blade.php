@@ -1,64 +1,61 @@
 @extends('layout')
 
 @section('content')
-    <div class="mt-4 mb-3 d-flex align-items-center justify-content-between">
-        <h1 class="h4 mb-0">Комментарии к статье: {{ $article->title }}</h1>
-        <div>
-            <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
-                <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.show', $article) }}">К статье</a>
-                @can('comment.create')
-                    <a class="btn btn-primary btn-sm" href="{{ route('articles.comments.create', $article) }}">Добавить</a>
-                @endcan
-            </div>
-        </div>
+<div class="container py-3" style="max-width: 900px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Комментарии к: <a href="{{ route('articles.show', $article) }}">{{ $article->title }}</a></h1>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ route('articles.show', $article) }}">Назад к статье</a>
+  </div>
+
+  @if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+  @endif
+  @if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+  @endif
+  @if ($errors->any())
+    <div class="alert alert-danger">
+      @foreach ($errors->all() as $error)
+        <div>{{ $error }}</div>
+      @endforeach
     </div>
+  @endif
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+  @auth
+    <form method="POST" action="{{ route('articles.comments.store', $article) }}" class="mb-4">
+      @csrf
+      <div class="mb-2">
+        <label class="form-label">Новый комментарий</label>
+        <textarea class="form-control" name="text" rows="3" required>{{ old('text') }}</textarea>
+      </div>
+      <button class="btn btn-primary">Отправить</button>
+      <div class="text-muted small mt-2">Если включена модерация, комментарий появится после одобрения.</div>
+    </form>
+  @else
+    <div class="alert alert-info">
+      <a href="{{ route('login') }}">Войдите</a>, чтобы оставить комментарий.
+    </div>
+  @endauth
 
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
-    @if($comments->count() === 0)
-        <div class="alert alert-info">Комментариев пока нет.</div>
-    @else
-        <div class="list-group">
-            @foreach($comments as $comment)
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ $comment->author?->name ?? $comment->author_name }}</strong>
-                        <small class="text-muted">{{ $comment->created_at->format('d.m.Y H:i') }}</small>
-                    </div>
-
-                    @if($comment->author_email)
-                        <div class="text-muted">{{ $comment->author_email }}</div>
-                    @endif
-
-                    <div class="mt-2" style="white-space: pre-wrap;">{{ $comment->body }}</div>
-
-                    @can('comment.update', $comment)
-                        <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('comments.edit', $comment) }}">Редактировать</a>
-
-                            @can('comment.delete', $comment)
-                                <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="m-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить комментарий?')">
-                                        Удалить
-                                    </button>
-                                </form>
-                            @endcan
-                        </div>
-                    @endcan
-                </div>
-            @endforeach
+  <div class="list-group">
+    @forelse($comments as $comment)
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <strong>{{ $comment->author?->name ?? ($comment->author_name ?? 'User') }}</strong>
+          <small class="text-muted">{{ optional($comment->created_at)->format('d.m.Y H:i') }}</small>
         </div>
-
-        <div class="mt-3">
-            {{ $comments->links() }}
+        <div class="mt-2" style="white-space: pre-wrap;">
+          {{ $comment->content ?? $comment->body ?? $comment->text ?? '' }}
         </div>
-    @endif
+        @if(isset($comment->is_approved) && $comment->is_approved === false)
+          <div class="mt-2">
+            <span class="badge bg-warning text-dark">На модерации</span>
+          </div>
+        @endif
+      </div>
+    @empty
+      <div class="list-group-item text-muted">Комментариев пока нет.</div>
+    @endforelse
+  </div>
+</div>
 @endsection

@@ -1,4 +1,4 @@
-## Лабораторная работа №13: КЭШ
+## Лабораторная работа №15:
 
 
 
@@ -26,3 +26,7 @@ php artisan tinker --execute='$s=cache()->store("database"); $before=DB::table("
 Команда должна показать, что после Cache::flush() записей стало 0:
 
 php artisan tinker --execute='cache()->store("database")->put("proof","1",600); echo "before=".DB::table("cache")->count().PHP_EOL; Cache::flush(); echo "after=".DB::table("cache")->count().PHP_EOL;'
+
+3) Отправить письмо
+cd ~/Desktop/Laravel-Project || exit 1
+php artisan site:daily-stats

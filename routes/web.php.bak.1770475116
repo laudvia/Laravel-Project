@@ -1,15 +1,11 @@
 <?php
 
-use App\Http\Controllers\NotificationController;
-
-use App\Http\Controllers\CommentManageController;
-
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\MainController;
 
 use App\Http\Controllers\ArticleCommentController;
 
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -118,32 +114,4 @@ Route::middleware(['web'])->group(function () {
             ->middleware('can:is-moderator')
             ->name('moderator.comments.reject');
     });
-});
-
-
-// --- Comments (WEB) ---
-if (!Route::has('articles.comments.index')) {
-    Route::get('/articles/{article}/comments', [ArticleCommentController::class, 'index'])
-        ->name('articles.comments.index');
-}
-if (!Route::has('articles.comments.store')) {
-    Route::post('/articles/{article}/comments', [ArticleCommentController::class, 'store'])
-        ->middleware('auth')
-        ->name('articles.comments.store');
-}
-
-// --- Notifications (WEB) ---
-if (!Route::has('notifications.open')) {
-    Route::get('/notifications/{id}', [NotificationsController::class, 'open'])
-        ->middleware('auth')
-        ->name('notifications.open');
-}
-
-
-
-// --- Comment manage (edit/update/delete) ---
-Route::middleware('auth')->group(function () {
-    Route::get('/comments/{comment}/edit', [CommentManageController::class, 'edit'])->name('comments.edit');
-    Route::patch('/comments/{comment}', [CommentManageController::class, 'update'])->name('comments.update');
-    Route::delete('/comments/{comment}', [CommentManageController::class, 'destroy'])->name('comments.destroy');
 });

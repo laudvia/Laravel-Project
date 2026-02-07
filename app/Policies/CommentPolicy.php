@@ -4,46 +4,25 @@ namespace App\Policies;
 
 use App\Models\Comment;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Gate;
 
 class CommentPolicy
 {
-    /**
-     * Список/просмотр комментариев доступен всем авторизованным пользователям.
-     */
-    public function viewAny(?User $user): bool
+    public function update(User $user, Comment $comment): bool
     {
-        return $user !== null;
-    }
-
-    public function view(?User $user, Comment $comment): bool
-    {
-        return $user !== null;
-    }
-
-    /**
-     * Добавлять комментарии может любой авторизованный пользователь (читатель или модератор).
-     */
-    public function create(User $user): Response
-    {
-        return Response::allow();
-    }
-
-    public function update(User $user, Comment $comment): Response
-    {
-        if ($comment->user_id !== null && $comment->user_id === $user->id) {
-            return Response::allow();
+        if (Gate::forUser($user)->allows('is-moderator')) {
+            return true;
         }
 
-        return Response::deny('Редактировать комментарии может только автор комментария и модератор.');
+        return (int) $comment->user_id === (int) $user->id;
     }
 
-    public function delete(User $user, Comment $comment): Response
+    public function delete(User $user, Comment $comment): bool
     {
-        if ($comment->user_id !== null && $comment->user_id === $user->id) {
-            return Response::allow();
+        if (Gate::forUser($user)->allows('is-moderator')) {
+            return true;
         }
 
-        return Response::deny('Удалять комментарии может только автор комментария и модератор.');
+        return (int) $comment->user_id === (int) $user->id;
     }
 }

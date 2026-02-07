@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers;
 
+
+
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use App\Models\ArticleView;
 use App\Events\NewArticleEvent;
 use App\Jobs\VeryLongJob;
 use App\Models\Article;
@@ -11,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 
+use App\Models\Comment;
+use Illuminate\Support\Facades\Gate;
 class ArticleController extends Controller
 {
     /**
@@ -27,6 +35,7 @@ class ArticleController extends Controller
 
     public function index()
     {
+        Cache::increment('stats:views:' . now()->toDateString());
         $page = (int) request()->query('page', 1);
 
         $cacheKey = "articles.index.page.$page";
@@ -97,6 +106,40 @@ class ArticleController extends Controller
 
     public function show(Article $article)
     {
+        // --- Record article view (for daily stats) ---
+        try {
+            $viewQ = ArticleView::query()->where('article_id', $article->id);
+
+            if (auth()->check()) {
+                $viewQ->where('user_id', auth()->id());
+            } else {
+                if (DB::getSchemaBuilder()->hasColumn((new ArticleView())->getTable(), 'session_id')) {
+                    $viewQ->where('session_id', session()->getId());
+                }
+            }
+
+            $viewQ->whereDate('created_at', now()->toDateString());
+
+            if (!$viewQ->exists()) {
+                $data = [
+                    'article_id' => $article->id,
+                    'user_id'    => auth()->id(),
+                    'method'     => request()->method(),
+                    'path'       => request()->path() ? '/' . ltrim(request()->path(), '/') : request()->getPathInfo(),
+                    'full_url'   => request()->fullUrl(),
+                ];
+
+                if (DB::getSchemaBuilder()->hasColumn((new ArticleView())->getTable(), 'session_id')) {
+                    $data['session_id'] = session()->getId();
+                }
+
+                ArticleView::create($data);
+            }
+        } catch (\Throwable $e) {
+            // no-op
+        }
+        $this->recordArticleView($article);
+        Cache::increment('stats:views:' . now()->toDateString());
         // ЛР13: кэшируем страницу просмотра статьи вместе с комментариями.
         // Используем rememberForever, т.к. в требованиях указано «rememberForever».
         $cacheKey = "articles.show.{$article->id}";
@@ -177,4 +220,63 @@ class ArticleController extends Controller
 
         Cache::forget(self::INDEX_PAGES_CACHE_KEY);
     }
+
+    /**
+     * Записывает просмотр статьи в таблицу article_views (для статистики).
+     * Не использует IP. Дедупликация: 1 просмотр/сутки на сессию (и пользователя, если есть user_id).
+     */
+    private function recordArticleView(\App\Models\Article $article): void
+    {
+        try {
+            $table = (new ArticleView())->getTable();
+
+            if (!Schema::hasTable($table)) {
+                return;
+            }
+
+            $now = now();
+            $data = ['article_id' => $article->id];
+
+            // Пишем только если колонки реально есть
+            if (Schema::hasColumn($table, 'user_id')) {
+                $data['user_id'] = auth()->id();
+            }
+            if (Schema::hasColumn($table, 'session_id')) {
+                $data['session_id'] = session()->getId();
+            }
+            if (Schema::hasColumn($table, 'viewed_at')) {
+                $data['viewed_at'] = $now;
+            }
+            if (Schema::hasColumn($table, 'created_at')) {
+                $data['created_at'] = $now;
+            }
+            if (Schema::hasColumn($table, 'updated_at')) {
+                $data['updated_at'] = $now;
+            }
+
+            // Дедупликация: если есть session_id и/или viewed_at — не плодим записи
+            $q = DB::table($table)->where('article_id', $article->id);
+
+            if (Schema::hasColumn($table, 'session_id')) {
+                $q->where('session_id', session()->getId());
+            }
+            if (Schema::hasColumn($table, 'user_id') && auth()->check()) {
+                $q->where('user_id', auth()->id());
+            }
+            if (Schema::hasColumn($table, 'viewed_at')) {
+                $q->whereDate('viewed_at', $now->toDateString());
+            } elseif (Schema::hasColumn($table, 'created_at')) {
+                $q->whereDate('created_at', $now->toDateString());
+            }
+
+            if ($q->exists()) {
+                return;
+            }
+
+            DB::table($table)->insert($data);
+        } catch (\Throwable $e) {
+            // Не ломаем страницу из-за статистики
+        }
+    }
+
 }

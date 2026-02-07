@@ -1,47 +1,35 @@
 @extends('layout')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-4">Авторизация</h2>
+<div class="container py-4" style="max-width:520px">
+  <h1 class="h3 mb-3">Вход</h1>
 
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
-
-        <form action="{{ route('login.perform') }}" method="POST">
-            @csrf
-
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input name="email" type="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
-                @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Пароль</label>
-                <input name="password" type="password" class="form-control @error('password') is-invalid @enderror" required>
-                @error('password')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3 form-check">
-                <input name="remember" type="checkbox" class="form-check-input" id="remember">
-                <label class="form-check-label" for="remember">Запомнить меня</label>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Войти</button>
-            <a class="btn btn-link" href="{{ route('register.form') }}">Нет аккаунта? Регистрация</a>
-        </form>
-
-        @auth
-            <div class="alert alert-info mt-4">
-                Вы уже авторизованы как <strong>{{ auth()->user()->name }}</strong>.
-            </div>
-        @endauth
+  @if ($errors->any())
+    <div class="alert alert-danger">
+      @foreach ($errors->all() as $error)
+        <div>{{ $error }}</div>
+      @endforeach
     </div>
+  @endif
+
+  <form method="POST" action="{{ route('login.perform') }}">
+    @csrf
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input class="form-control" type="email" name="email" required value="{{ old('email', 'moderator@example.com') }}">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Пароль</label>
+      <input class="form-control" type="password" name="password" required value="password">
+    </div>
+
+    <button class="btn btn-primary">Войти</button>
+    <a class="btn btn-outline-secondary ms-2" href="{{ route('register.form') }}">Регистрация</a>
+  </form>
+
+  <div class="text-muted small mt-3">
+    Эта форма делает WEB-вход (cookie-сессия). API-токен остаётся отдельно: <code>POST /api/login</code>.
+  </div>
 </div>
 @endsection
